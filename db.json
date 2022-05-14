@@ -1,0 +1,53 @@
+{
+    "cultura": [
+        {
+            "id": 1,
+            "nomeCultura": "Abamectina",
+            "nomeCientifico": "Abamectina",
+            "status": true,
+            "situacao": "Editando"
+        },
+        {
+            "id": 2,
+            "nomeCultura": "react-table",
+            "nomeCientifico": "rocks",
+            "status": false,
+            "situacao": "Ativo"
+        },
+        {
+            "id": 3,
+            "nomeCultura": "whatever",
+            "nomeCientifico": "you want",
+            "status": false,
+            "situacao": "Ativo"
+        },
+        {
+            "id": 4,
+            "nomeCultura": "whatever",
+            "nomeCientifico": "you want",
+            "status": false,
+            "situacao": "Ativo"
+        },
+        {
+            "id": 5,
+            "nomeCultura": "whatever",
+            "nomeCientifico": "you want",
+            "status": false,
+            "situacao": "Ativo"
+        },
+        {
+            "id": 6,
+            "nomeCultura": "whatever",
+            "nomeCientifico": "you want",
+            "status": false,
+            "situacao": "Ativo"
+        },
+        {
+            "id": 7,
+            "nomeCultura": "whatever",
+            "nomeCientifico": "you want",
+            "status": false,
+            "situacao": "Ativo"
+        }
+    ]
+}

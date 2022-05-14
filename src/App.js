@@ -1,227 +1,102 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { ToggleOffOutlined, ToggleOnOutlined } from "@mui/icons-material";
+import { Table } from "./components/Table";
+import { getAllCultural } from "./services/v1/cultural-service";
 
 function App() {
-  const [tasks, setTasks] = useState([]);
-  const [task, setTask] = useState("");
-  const [taskUpdate, setTaskUpdate] = useState("");
+  const [data, setData] = useState([]);
+  const [count, setCount] = useState(0);
+  const [selectedNumberFilter, setSelectedNumberFilter] = useState(5);
 
-  function onSubmit(e) {
-    e.preventDefault();
-    const findSameTask = tasks.find((item) => item.name === task);
+  async function tryGetAllCultura() {
+    //LOADING TRUE
+    const culturalsTotal = await getAllCultural({
+      pageNumber: 1,
+    });
 
-    if (findSameTask) {
-      return alert(`A tarefa ${findSameTask?.name} já existe!`);
-    }
+    const culturals = await getAllCultural({
+      pageNumber: 1,
+      pageLimit: selectedNumberFilter,
+    });
+    setData(culturals);
+    setCount(culturalsTotal.length);
+  }
 
-    if (!task) {
-      return alert("Por favor, digite o nome da tarefa.");
-    }
-
-    if (tasks.length === 0) {
-      setTasks([{ id: 1, name: task }]);
-      setTask("");
-    } else {
-      setTasks((prevState) => {
-        const newTask = {
-          id: prevState.length + 1,
-          name: task,
-        };
-
-        return [...prevState, newTask];
-      });
-      setTask("");
+  async function getCultura() {
+    try {
+      await tryGetAllCultura();
+    } catch (e) {
+      console.log(e);
+    } finally {
+      // LOADING FALSE
     }
   }
 
-  function handleDeleteTask(id) {
-    const filterTasks = tasks.filter((item) => item.id !== id);
-    setTasks(filterTasks);
+  useEffect(() => {
+    (async () => {
+      await getCultura();
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedNumberFilter]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  function handleUpdateStatus(id, status) {
+    const findIndexData = data.findIndex((item) => item.id === id);
+    data[findIndexData].status = !status;
+    setData((prevState) => [...prevState]);
   }
 
-  function handleUpdateTask(id, name) {
-    const findIndexTask = tasks.findIndex((item) => item.id === id);
-    tasks[findIndexTask].name = name;
-  }
-
-  function toggleEditable(id, status) {
-    const findIndexTask = tasks.findIndex((item) => item.id === id);
-    tasks[findIndexTask].isUpdate = !status;
-    setTasks((prevState) => [...prevState]);
-  }
+  const columns = useMemo(
+    () => [
+      {
+        Header: () => <input type="checkbox" />,
+        accessor: "checkbox", // accessor is the "key" in the data
+        Cell: () => <input type="checkbox" />,
+      },
+      {
+        Header: "Ativo",
+        accessor: "status", // accessor is the "key" in the data
+        Cell: ({ row }) => (
+          <div
+            onClick={() =>
+              handleUpdateStatus(row.original.id, row.original.status)
+            }
+          >
+            {row.original.status ? <ToggleOnOutlined /> : <ToggleOffOutlined />}
+          </div>
+        ),
+      },
+      {
+        Header: "Nome da Cultura",
+        accessor: "nomeCultura", // accessor is the "key" in the data
+      },
+      {
+        Header: "Nome Científico",
+        accessor: "nomeCientifico",
+      },
+      {
+        Header: "Situação",
+        accessor: "situacao",
+      },
+    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
   return (
-    <div
-      style={{
-        width: "100%",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <h1>TO-DO</h1>
-      <form
-        onSubmit={onSubmit}
-        style={{ display: "flex", flexDirection: "column", width: "600px" }}
+    <div style={{ width: "100%", height: "100%" }}>
+      <div>Mostrar</div>
+      <select
+        onChange={(e) => setSelectedNumberFilter(e.target.value)}
+        defaultValue={selectedNumberFilter}
       >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            marginBottom: "50px",
-          }}
-        >
-          <label style={{ fontSize: "20px", fontWeight: "bold" }}>Tarefa</label>
-          <div style={{ display: "flex", marginTop: "15px" }}>
-            <input
-              name="task"
-              onChange={(e) => setTask(e.target.value)}
-              value={task}
-              style={{ width: "300px" }}
-              placeholder="Digite a tarefa"
-            />
-            <button
-              type="submit"
-              style={{
-                width: "60px",
-                padding: "5px",
-                marginLeft: "10px",
-                border: "0.5px solid green",
-                background: "transparent",
-                color: "green",
-                fontWeight: "bold",
-                fontSize: "18px",
-                cursor: "pointer",
-                borderRadius: "5px",
-              }}
-            >
-              Criar
-            </button>
-          </div>
-        </div>
-      </form>
-      <div style={{ maxWidth: "800px", width: "100%" }}>
-        {tasks.length > 0
-          ? tasks.map((task) => {
-              if (task.isUpdate) {
-                return (
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      padding: "5px",
-                      marginBottom: "20px",
-                      background: "#fff",
-                      borderLeft: "10px solid blue",
-                      borderBottom: "1px solid #222",
-                      height: "65px",
-                    }}
-                    key={task.id}
-                  >
-                    <input
-                      defaultValue={task.name}
-                      onChange={(e) => setTaskUpdate(e.target.value)}
-                      style={{ height: "20px" }}
-                    />
-                    <div
-                      style={{
-                        display: "flex",
-                        height: "100%",
-                        flexDirection: "column",
-                        justifyContent: "space-around",
-                      }}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => {
-                          handleUpdateTask(task.id, taskUpdate);
-                          toggleEditable(task.id, task.isUpdate);
-                        }}
-                        style={{
-                          border: "none",
-                          background: "transparent",
-                          padding: 0,
-                          cursor: "pointer",
-                          fontWeight: "bold",
-                          height: "15px",
-                          width: "15px",
-                        }}
-                      >
-                        Salvar
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => toggleEditable(task.id, task.isUpdate)}
-                        style={{
-                          border: "none",
-                          background: "transparent",
-                          padding: 0,
-                          cursor: "pointer",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </div>
-                );
-              }
-              return (
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    padding: "5px",
-                    marginBottom: "10px",
-                    borderLeft: "10px solid green",
-                    borderBottom: "1px solid #222",
-                  }}
-                  key={task.id}
-                >
-                  <h2>{task.name}</h2>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "space-around",
-                    }}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteTask(task.id)}
-                      style={{
-                        border: "none",
-                        background: "transparent",
-                        padding: 0,
-                        cursor: "pointer",
-                        fontWeight: "bold",
-                        height: "15px",
-                        width: "15px",
-                        marginLeft: "25px",
-                      }}
-                    >
-                      X
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => toggleEditable(task.id, task.isUpdate)}
-                      style={{
-                        border: "none",
-                        background: "transparent",
-                        padding: 0,
-                        cursor: "pointer",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      Editar
-                    </button>
-                  </div>
-                </div>
-              );
-            })
-          : "Nenhuma tarefa"}
-      </div>
+        <option value="5">5</option>
+        <option value="10">10</option>
+      </select>
+      <Table data={data} columns={columns} buttonAdd />
+      <span>
+        Mostrando {data.length} de {count}
+      </span>
     </div>
   );
 }
